@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 
 width = 640
 height = 480
+number_of_aliens = 0
 time.sleep(3)
 
 
@@ -50,12 +51,14 @@ class WebGame(Env):
         self.action_space = Discrete(4)
         self.cap = mss.mss()
         self.game_location = {'top': 0, 'left': 0, 'width': width, 'height': height}
-        self.done_location = {'top': 0, 'left': 0, 'width': width, 'height': height}
+        self.done_location = {'top': 0, 'left': 0, 'width': width, 'height': height}        
+        self.aliens = []
        
         
 
     # Step function
-    def step(self, action): 
+    def step(self, action):
+        global number_of_aliens
         # Implement the step logic for your game
         action_map = {
             0: 'space',
@@ -67,11 +70,38 @@ class WebGame(Env):
         if action != 2:
             pydirectinput.press(action_map[action])
 
-        done, _ = self.get_done()
-        reward = 1 if not done else 0  # Reward for staying aliveive
+        #Detect if the agent hit an alien or got hit by an enemy projectile.
+        self.detect_aliens()
+
+         # Calculate the number of aliens
+        num_aliens = len(self.aliens)
+
+
+        # Reward for staying aliveive
+        reward = 1 if not done else 0  
+
+        # Reward when the number of aliens decreases
+        kill_rewards = 5
+        if num_aliens < number_of_aliens:
+            reward += kill_rewards  # Reward when aliens decrease
+        number_of_aliens = num_aliens  # Update the global variable
+
+
+        
+
+
+
+        #calculate the game state
+        done, _ = self.get_done()        
         new_observation = self.get_observation()        
         info = {}
         return new_observation, reward, done, info
+    
+
+    def detect_aliens(self):
+        #detect 
+        print("detect hit here")
+
     
     # Rendering function
     def render(self):
