@@ -54,7 +54,7 @@ class WebGame(Env):
         self.cap = mss.mss()
         self.game_location = {'top': 0, 'left': 0, 'width': width, 'height': height}
         self.done_location = {'top': 0, 'left': 0, 'width': width, 'height': height}        
-        self.aliens = []
+        self.initial_alien_population = 0
        
         
 
@@ -72,27 +72,29 @@ class WebGame(Env):
         if action != 2:
             pydirectinput.press(action_map[action])
 
-        #Detect if the agent hit an alien or got hit by an enemy projectile.
-        amountOfAliens = self.detect_aliens()
+        # Detect the current alien population
+        current_alien_population = self.detect_aliens()
 
         
+        #calculate the game state
+        done, _ = self.get_done()  
 
 
         # Reward for staying aliveive
         reward = 1 if not done else 0  
 
+        
         # Reward when the number of aliens decreases
         kill_rewards = 5
-        if amountOfAliens < number_of_aliens:
+        if current_alien_population < self.current_alien_population:
             reward += kill_rewards  # Reward when aliens decrease
-        number_of_aliens = amountOfAliens  # Update the global variable
 
+        # Update the current alien population for the next step
+        self.current_alien_population = current_alien_population
       
 
 
-
-        #calculate the game state
-        done, _ = self.get_done()        
+      
         new_observation = self.get_observation()        
         info = {}
         return new_observation, reward, done, info
@@ -143,9 +145,16 @@ class WebGame(Env):
                 time.sleep(1)
 
 
-        return self.get_observation()
+        # Capture the initial alien population when the game is reset
+        self.initial_alien_population = self.detect_aliens()
 
-    ##################### Get part of the game
+        return self.get_observation()
+    
+
+
+
+
+    ##################### Get part of the game  ###################################
     def get_observation(self):        
         raw = np.array(self.cap.grab(self.game_location))[:,:,:3].astype(np.uint8)
         desired_width = int(width / 2)
@@ -154,7 +163,12 @@ class WebGame(Env):
         channel = np.reshape(resized, (3,desired_height,desired_width))
         return channel
  
-    ################### Get done text
+
+
+
+
+
+    ################### Get done text  ######################################
     def get_done(self):
         done=False
         image = None      
