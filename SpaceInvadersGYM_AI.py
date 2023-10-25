@@ -68,8 +68,8 @@ class WebGame(Env):
             pydirectinput.press(action_map[action])
 
         done, _ = self.get_done()
-        new_observation = self.get_observation()
-        reward = 1 if not done else 0  # Reward for staying alive
+        reward = 1 if not done else 0  # Reward for staying aliveive
+        new_observation = self.get_observation()        
         info = {}
         return new_observation, reward, done, info
     
@@ -110,7 +110,8 @@ class WebGame(Env):
  
     # Get done text
     def get_done(self):
-        done=False       
+        done=False
+        image = None      
         if pyautogui.locateOnScreen('Restart.png', confidence=0.9) != None:        
             image = pyautogui.locateOnScreen('Restart.png', confidence=0.9)
             if image != None:
@@ -119,7 +120,7 @@ class WebGame(Env):
         else:
             done = False
             
-        return done
+        return done, image
 
 
 env = WebGame()
