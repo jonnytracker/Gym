@@ -14,8 +14,10 @@ from matplotlib import pyplot as plt
 
 width = 640
 height = 480
-number_of_aliens = 0
+
 time.sleep(3)
+########################################################################################################################################
+
 
 
 
@@ -42,9 +44,9 @@ else:
     print("Game not found program not started")
 
 
-
+#####################################################################################  Environment Class ###################
 class WebGame(Env):
-    # Environment setup
+    ################# Environment setup ##########################################################
     def __init__(self):
         super().__init__()
         self.observation_space = Box(low=0, high=255, shape=(width, height, 3), dtype=np.uint8)
@@ -56,9 +58,9 @@ class WebGame(Env):
        
         
 
-    # Step function
+    ################ Step function ##############################################################
     def step(self, action):
-        global number_of_aliens
+        
         # Implement the step logic for your game
         action_map = {
             0: 'space',
@@ -71,10 +73,9 @@ class WebGame(Env):
             pydirectinput.press(action_map[action])
 
         #Detect if the agent hit an alien or got hit by an enemy projectile.
-        self.detect_aliens()
+        amountOfAliens = self.detect_aliens()
 
-         # Calculate the number of aliens
-        num_aliens = len(self.aliens)
+        
 
 
         # Reward for staying aliveive
@@ -82,12 +83,11 @@ class WebGame(Env):
 
         # Reward when the number of aliens decreases
         kill_rewards = 5
-        if num_aliens < number_of_aliens:
+        if amountOfAliens < number_of_aliens:
             reward += kill_rewards  # Reward when aliens decrease
-        number_of_aliens = num_aliens  # Update the global variable
+        number_of_aliens = amountOfAliens  # Update the global variable
 
-
-        
+      
 
 
 
@@ -98,22 +98,38 @@ class WebGame(Env):
         return new_observation, reward, done, info
     
 
+
+    #############################   Detect aliens in game #####################################################
     def detect_aliens(self):
-        #detect 
-        print("detect hit here")
+        population = 0
+        aliens = list(pyautogui.locateAllOnScreen('alienshipgreen.png', grayscale=True, confidence=0.5))
+        population = len(aliens)
+        print(f"detecting aliens amount {population}")
+        return population
+        
 
     
-    # Rendering function
+
+
+
+    ################################ Rendering function ##############################################################
     def render(self):
         cv2.imshow('Game', self.get_observation())
         if cv2.waitKey(1) & 0xFF == ord('q'):
             self.close()
+
+
+
     
-    # Close function
+    ########################### Close function ################################################################
     def close(self):
         cv2.destroyAllWindows()
     
-    # Reset the game
+
+
+
+
+    ################################################### Reset the game ########################################################
     def reset(self):
         time.sleep(1)      
 
@@ -129,7 +145,7 @@ class WebGame(Env):
 
         return self.get_observation()
 
-    # Get part of the game
+    ##################### Get part of the game
     def get_observation(self):        
         raw = np.array(self.cap.grab(self.game_location))[:,:,:3].astype(np.uint8)
         desired_width = int(width / 2)
@@ -138,7 +154,7 @@ class WebGame(Env):
         channel = np.reshape(resized, (3,desired_height,desired_width))
         return channel
  
-    # Get done text
+    ################### Get done text
     def get_done(self):
         done=False
         image = None      
@@ -151,7 +167,7 @@ class WebGame(Env):
             done = False
             
         return done, image
-
+################################################################################################################################
 
 env = WebGame()
 
