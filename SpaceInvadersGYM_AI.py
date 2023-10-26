@@ -1,4 +1,6 @@
+print('hello')
 import gymnasium as gym 
+
 import random
 import pyautogui
 import time
